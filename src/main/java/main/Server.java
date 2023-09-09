@@ -2,11 +2,12 @@ package main;
 
 import java.io.*;
 import java.net.*;
+import java.util.Optional;
 
 public class Server extends Thread {
 
 
-    private DatagramSocket serverSocket;
+    public DatagramSocket serverSocket;
     private InetAddress ipAddress;
 
 
@@ -38,17 +39,41 @@ public class Server extends Thread {
 
         try {
             serverSocket.receive(packet);
-            System.out.println("Server  recived packet");
+
 
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(buffer);
-            DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+            ObjectInputStream dataInputStream = new ObjectInputStream(byteArrayInputStream);
 
             int packetType = dataInputStream.readInt();
+
+            System.out.println("Server  recived packet TYPE:" + packetType);
+
 
 //           PACKET TYPE 0 IS LOGIN PACKET FOR NEW CLIENT
             if (packetType == 0) {
                 ConnectedClient client = new ConnectedClient(packet.getAddress(), packet.getPort());
                 serverSocket.send(PacketManager.LoginAnswerPacket(client));
+            }
+//           PACKET WITH INPUTS FOR CHARACTER MOVEMENT
+            if(packetType == 1) {
+                int connectedClinetID = dataInputStream.readInt();
+
+                Optional<ConnectedClient> connectedClient;
+                synchronized (ConnectedClient.listOfConnectedClients) {
+                     connectedClient = ConnectedClient.listOfConnectedClients.stream()
+                            .filter(element -> element.playerMovementHandler.clientID == connectedClinetID).findFirst();
+                }
+                if (connectedClient.isPresent()) {
+//                    System.out.println(dataInputStream.readInt());
+//                    System.out.println(dataInputStream.readInt());
+                connectedClient.get().playerMovementHandler.mouseClickXPos = dataInputStream.readInt();
+                connectedClient.get().playerMovementHandler.mouseClickYPos = dataInputStream.readInt();
+
+                connectedClient.get().playerMovementHandler.playerMovementStartingPosX = connectedClient.get().playerMovementHandler.playerPosXWorld;
+                connectedClient.get().playerMovementHandler.playerMovementStartingPosY = connectedClient.get().playerMovementHandler.playerPosYWorld;
+
+                connectedClient.get().playerMovementHandler.setVectorForPlayerMovement();
+                }
             }
 
         } catch (IOException e) {

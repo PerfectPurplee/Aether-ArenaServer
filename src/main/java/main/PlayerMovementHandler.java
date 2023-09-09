@@ -1,17 +1,11 @@
 package main;
 
-import java.awt.image.BufferedImage;
+import java.io.*;
 
-public class PlayerMovementHandler {
+public class PlayerMovementHandler implements Serializable {
 
 
-    public enum PlayerState {
-        IDLE_UP, IDLE_DOWN, IDLE_LEFT, IDLE_RIGHT,
-        MOVING_UP, MOVING_DOWN, MOVING_LEFT, MOVING_RIGHT
-
-    }
-
-    public PlayerState Current_Player_State;
+    public EnumContainer.PlayerState Current_Player_State;
     public float playerPosXWorld, playerPosYWorld;
     public int mouseClickXPos, mouseClickYPos;
     public float normalizedVectorX, normalizedVectorY;
@@ -19,12 +13,14 @@ public class PlayerMovementHandler {
     public float playerMovementStartingPosX, playerMovementStartingPosY;
 
     //    counter how many players connected to move handler and based on that determine their starting position
-    private static int counter = 0;
+    public static int counter = 0;
+    public int clientID;
 
 
     public PlayerMovementHandler() {
-        Current_Player_State = PlayerState.IDLE_DOWN;
+        Current_Player_State = EnumContainer.PlayerState.IDLE_DOWN;
         playerStartingPosition();
+        clientID = counter;
         counter++;
 
     }
@@ -35,8 +31,12 @@ public class PlayerMovementHandler {
             playerPosXWorld = 100;
             playerPosYWorld = 100;
         } else if (counter == 1) {
-            playerPosXWorld = 2000;
-            playerPosYWorld = 2000;
+            playerPosXWorld = 600;
+            playerPosYWorld = 100;
+        } else if (counter == 2) {
+            playerPosXWorld = 100;
+            playerPosYWorld = 600;
+
         }
     }
 
@@ -46,25 +46,25 @@ public class PlayerMovementHandler {
 //        Ruch na lewej gornej cwiartce liczac od postaci
         if (playerMovementStartingPosX > mouseClickXPos && playerMovementStartingPosY > mouseClickYPos) {
             if (playerPosXWorld > mouseClickXPos && playerPosYWorld > mouseClickYPos) {
-                Current_Player_State = PlayerState.MOVING_UP;
+                Current_Player_State = EnumContainer.PlayerState.MOVING_UP;
                 playerPosXWorld += (playerMovespeed * normalizedVectorX);
                 playerPosYWorld += (playerMovespeed * normalizedVectorY);
             }
         } else if (playerMovementStartingPosX < mouseClickXPos && playerMovementStartingPosY < mouseClickYPos) {
             if (playerPosXWorld < mouseClickXPos && playerPosYWorld < mouseClickYPos) {
-                Current_Player_State = PlayerState.MOVING_DOWN;
+                Current_Player_State = EnumContainer.PlayerState.MOVING_DOWN;
                 playerPosXWorld += (playerMovespeed * normalizedVectorX);
                 playerPosYWorld += (playerMovespeed * normalizedVectorY);
             }
         } else if (playerMovementStartingPosX < mouseClickXPos && playerMovementStartingPosY > mouseClickYPos) {
             if (playerPosXWorld < mouseClickXPos && playerPosYWorld > mouseClickYPos) {
-                Current_Player_State = PlayerState.MOVING_RIGHT;
+                Current_Player_State = EnumContainer.PlayerState.MOVING_RIGHT;
                 playerPosXWorld += (playerMovespeed * normalizedVectorX);
                 playerPosYWorld += (playerMovespeed * normalizedVectorY);
             }
         } else if (playerMovementStartingPosX > mouseClickXPos && playerMovementStartingPosY < mouseClickYPos) {
             if (playerPosXWorld > mouseClickXPos && playerPosYWorld < mouseClickYPos) {
-                Current_Player_State = PlayerState.MOVING_LEFT;
+                Current_Player_State = EnumContainer.PlayerState.MOVING_LEFT;
                 playerPosXWorld += (playerMovespeed * normalizedVectorX);
                 playerPosYWorld += (playerMovespeed * normalizedVectorY);
             }
@@ -101,6 +101,15 @@ public class PlayerMovementHandler {
                 return 0;
             }
         }
+    }
+
+    public void setVectorForPlayerMovement() {
+        float vectorX = mouseClickXPos - playerPosXWorld;
+        float vectorY = mouseClickYPos - playerPosYWorld;
+        float magnitude = (float) Math.sqrt(vectorX * vectorX + vectorY * vectorY);
+
+        normalizedVectorX = (vectorX / magnitude);
+        normalizedVectorY = (vectorY / magnitude);
     }
 
 }

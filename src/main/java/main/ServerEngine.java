@@ -1,5 +1,7 @@
 package main;
 
+import java.io.IOException;
+
 public class ServerEngine extends Thread {
 
     Server server;
@@ -12,13 +14,22 @@ public class ServerEngine extends Thread {
     }
 
 
-    private void update() {
+    private synchronized void update() {
 //        UPDATE ALL CLIENTS PLAYER POSITIONS AND CHOOSE SPRITE FOR ANIMATION
         ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
                 connectedClient.playerMovementHandler.moveController());
-        ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
-                connectedClient.playerMovementHandler.playerSpriteController());
+//        ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
+//                connectedClient.playerMovementHandler.playerSpriteController());
 
+        ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
+            try {
+                server.serverSocket.send(PacketManager.UpdateAllPlayersPositionsPacket(connectedClient));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+//ConnectedClient.listOfConnectedClients.forEach(connectedClient -> System.out.println("ID: " + connectedClient.playerMovementHandler.clientID + "PosX: " + connectedClient.playerMovementHandler.playerPosXWorld));
 
     }
 
