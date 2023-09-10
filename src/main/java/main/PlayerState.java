@@ -2,7 +2,7 @@ package main;
 
 public abstract class PlayerState {
 
-    public static EnumContainer.PlayerState Current_Player_State;
+    public static EnumContainer.AllPlayerStates Current_Player_State_Shared;
 
 
 }

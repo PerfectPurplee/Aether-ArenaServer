@@ -64,8 +64,7 @@ public class Server extends Thread {
                             .filter(element -> element.playerMovementHandler.clientID == connectedClinetID).findFirst();
                 }
                 if (connectedClient.isPresent()) {
-//                    System.out.println(dataInputStream.readInt());
-//                    System.out.println(dataInputStream.readInt());
+
                 connectedClient.get().playerMovementHandler.mouseClickXPos = dataInputStream.readInt();
                 connectedClient.get().playerMovementHandler.mouseClickYPos = dataInputStream.readInt();
 

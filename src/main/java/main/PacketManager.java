@@ -43,7 +43,7 @@ public abstract class PacketManager {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
-        PlayerState.Current_Player_State = client.playerMovementHandler.Current_Player_State;
+        PlayerState.Current_Player_State_Shared = client.playerMovementHandler.Current_Player_State;
 
         try {
 
@@ -52,9 +52,9 @@ public abstract class PacketManager {
 
 
             for (int i = 0; i < ConnectedClient.listOfConnectedClients.size(); i++) {
-                PlayerState.Current_Player_State = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.Current_Player_State;
+                PlayerState.Current_Player_State_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.Current_Player_State;
                 objectOutputStream.writeInt(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.clientID);
-                objectOutputStream.writeObject(PlayerState.Current_Player_State);
+                objectOutputStream.writeObject(PlayerState.Current_Player_State_Shared);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosXWorld);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosYWorld);
 
