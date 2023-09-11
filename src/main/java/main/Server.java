@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.Optional;
 
+import static main.EnumContainer.*;
+
 public class Server extends Thread {
 
 
@@ -51,31 +53,30 @@ public class Server extends Thread {
 
 //           PACKET TYPE 0 IS LOGIN PACKET FOR NEW CLIENT
             if (packetType == 0) {
+                ServerClientConnectionCopyObjects.PLayer_Champion_Shared = (AllPlayableChampions) dataInputStream.readObject();
                 ConnectedClient client = new ConnectedClient(packet.getAddress(), packet.getPort());
+
                 serverSocket.send(PacketManager.LoginAnswerPacket(client));
             }
 //           PACKET WITH INPUTS FOR CHARACTER MOVEMENT
-            if(packetType == 1) {
+            if (packetType == 1) {
                 int connectedClinetID = dataInputStream.readInt();
 
                 Optional<ConnectedClient> connectedClient;
                 synchronized (ConnectedClient.listOfConnectedClients) {
-                     connectedClient = ConnectedClient.listOfConnectedClients.stream()
+                    connectedClient = ConnectedClient.listOfConnectedClients.stream()
                             .filter(element -> element.playerMovementHandler.clientID == connectedClinetID).findFirst();
                 }
                 if (connectedClient.isPresent()) {
 
-                connectedClient.get().playerMovementHandler.mouseClickXPos = dataInputStream.readInt();
-                connectedClient.get().playerMovementHandler.mouseClickYPos = dataInputStream.readInt();
+                    connectedClient.get().playerMovementHandler.mouseClickXPos = dataInputStream.readInt();
+                    connectedClient.get().playerMovementHandler.mouseClickYPos = dataInputStream.readInt();
 
-                connectedClient.get().playerMovementHandler.playerMovementStartingPosX = connectedClient.get().playerMovementHandler.playerPosXWorld;
-                connectedClient.get().playerMovementHandler.playerMovementStartingPosY = connectedClient.get().playerMovementHandler.playerPosYWorld;
-
-                connectedClient.get().playerMovementHandler.setVectorForPlayerMovement();
+                    connectedClient.get().playerMovementHandler.setVectorForPlayerMovement();
                 }
             }
 
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }

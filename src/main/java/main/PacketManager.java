@@ -43,7 +43,8 @@ public abstract class PacketManager {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
-        PlayerState.Current_Player_State_Shared = client.playerMovementHandler.Current_Player_State;
+
+        EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared = client.playerMovementHandler.PlayerChampion;
 
         try {
 
@@ -52,11 +53,15 @@ public abstract class PacketManager {
 
 
             for (int i = 0; i < ConnectedClient.listOfConnectedClients.size(); i++) {
-                PlayerState.Current_Player_State_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.Current_Player_State;
+                EnumContainer.ServerClientConnectionCopyObjects.Current_Player_State_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.Current_Player_State;
+                EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.PlayerChampion;
                 objectOutputStream.writeInt(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.clientID);
-                objectOutputStream.writeObject(PlayerState.Current_Player_State_Shared);
+                objectOutputStream.writeObject(EnumContainer.ServerClientConnectionCopyObjects.Current_Player_State_Shared);
+                objectOutputStream.writeObject(EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosXWorld);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosYWorld);
+
+
 
             }
             objectOutputStream.flush();

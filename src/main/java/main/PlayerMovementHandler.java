@@ -6,6 +6,7 @@ public class PlayerMovementHandler implements Serializable {
 
 
     public EnumContainer.AllPlayerStates Current_Player_State;
+    public EnumContainer.AllPlayableChampions PlayerChampion;
     public float playerPosXWorld, playerPosYWorld;
     public int mouseClickXPos, mouseClickYPos;
     public float normalizedVectorX, normalizedVectorY;
@@ -13,18 +14,34 @@ public class PlayerMovementHandler implements Serializable {
     public float playerMovementStartingPosX, playerMovementStartingPosY;
     public float distanceToTravel;
     public boolean isPlayerMoving;
-    public int playerFeetX = 64, playerFeetY = 115;
+    private int playerFeetX, playerFeetY;
     //    counter how many players connected to move handler and based on that determine their starting position
     public static int counter = 0;
     public int clientID;
 
 
     public PlayerMovementHandler() {
+        setPlayerChampion(EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
         Current_Player_State = EnumContainer.AllPlayerStates.IDLE_DOWN;
         playerStartingPosition();
         clientID = counter;
         counter++;
 
+    }
+
+    public void setPlayerChampion(EnumContainer.AllPlayableChampions champion) {
+        PlayerChampion = champion;
+        setPLayerFeetPos();
+    }
+
+    public void setPLayerFeetPos() {
+        if (PlayerChampion.equals(EnumContainer.AllPlayableChampions.DON_OHL)) {
+            playerFeetX = 36;
+            playerFeetY = 68;
+        } else if (PlayerChampion.equals(EnumContainer.AllPlayableChampions.BIG_HAIRY_SWEATY_DUDE)) {
+            playerFeetX = 64;
+            playerFeetY = 115;
+        }
     }
 
     private void playerStartingPosition() {
@@ -124,6 +141,7 @@ public class PlayerMovementHandler implements Serializable {
 
 
     public void setVectorForPlayerMovement() {
+        setPlayerMovementStartingPosition(playerPosXWorld, playerPosYWorld);
         float vectorX = mouseClickXPos - (playerPosXWorld + playerFeetX);
         float vectorY = mouseClickYPos - (playerPosYWorld + playerFeetY);
         float magnitude = (float) Math.sqrt(vectorX * vectorX + vectorY * vectorY);
@@ -131,6 +149,11 @@ public class PlayerMovementHandler implements Serializable {
 
         normalizedVectorX = (vectorX / magnitude);
         normalizedVectorY = (vectorY / magnitude);
+    }
+
+    public void setPlayerMovementStartingPosition(float playerPosXWorld, float playerPosYWorld) {
+        this.playerMovementStartingPosX = playerPosXWorld + playerFeetX;
+        this.playerMovementStartingPosY = playerPosYWorld + playerFeetY;
     }
 
 }
