@@ -1,11 +1,17 @@
 package main;
 
+import main.clients.ConnectedClient;
+import main.clients.spells.Spell01;
+
 import java.io.IOException;
 
 public class ServerEngine extends Thread {
 
     Server server;
     private final int UPS_SET = 128;
+
+    public static final int gameMapWidth = 3840;
+    public static final int gameMapHeight = 2160;
 
     public ServerEngine() {
         server = new Server();
@@ -17,13 +23,16 @@ public class ServerEngine extends Thread {
     private synchronized void update() {
 //        UPDATE ALL CLIENTS PLAYER POSITIONS AND CHOOSE SPRITE FOR ANIMATION
         ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
-                connectedClient.playerMovementHandler.moveController());
-//        ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
-//                connectedClient.playerMovementHandler.playerSpriteController());
+                connectedClient.playerClass.moveController());
+
+        Spell01.updateAllSpells01();
+
+
 
         ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
             try {
                 server.serverSocket.send(PacketManager.UpdateAllPlayersPositionsPacket(connectedClient));
+                server.serverSocket.send(PacketManager.updateAllPlayerSpells(connectedClient));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

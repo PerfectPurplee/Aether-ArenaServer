@@ -1,5 +1,8 @@
 package main;
 
+import main.clients.ConnectedClient;
+
+import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.Optional;
@@ -60,19 +63,37 @@ public class Server extends Thread {
             }
 //           PACKET WITH INPUTS FOR CHARACTER MOVEMENT
             if (packetType == 1) {
-                int connectedClinetID = dataInputStream.readInt();
+                int connectedClientID = dataInputStream.readInt();
 
                 Optional<ConnectedClient> connectedClient;
                 synchronized (ConnectedClient.listOfConnectedClients) {
                     connectedClient = ConnectedClient.listOfConnectedClients.stream()
-                            .filter(element -> element.playerMovementHandler.clientID == connectedClinetID).findFirst();
+                            .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
                 }
                 if (connectedClient.isPresent()) {
 
-                    connectedClient.get().playerMovementHandler.mouseClickXPos = dataInputStream.readInt();
-                    connectedClient.get().playerMovementHandler.mouseClickYPos = dataInputStream.readInt();
+                    connectedClient.get().playerClass.mouseClickXPos = dataInputStream.readInt();
+                    connectedClient.get().playerClass.mouseClickYPos = dataInputStream.readInt();
 
-                    connectedClient.get().playerMovementHandler.setVectorForPlayerMovement();
+                    connectedClient.get().playerClass.setVectorForPlayerMovement();
+                }
+            }
+            if (packetType == 2) {
+
+                int connectedClientID = dataInputStream.readInt();
+
+                Optional<ConnectedClient> connectedClient;
+                synchronized (ConnectedClient.listOfConnectedClients) {
+                    connectedClient = ConnectedClient.listOfConnectedClients.stream()
+                            .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
+
+                    if (connectedClient.isPresent()) {
+                        ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests = (Boolean[]) dataInputStream.readObject();
+                        ServerClientConnectionCopyObjects.currentMousePosition = (Point) dataInputStream.readObject();
+                        System.out.println("success");
+                        connectedClient.get().playerClass.spellCastController();
+
+                    }
                 }
             }
 
@@ -80,30 +101,5 @@ public class Server extends Thread {
             throw new RuntimeException(e);
         }
     }
-
-//    TO BEDZIE MOVEMENT PACKET
-//    private void sendDataToClient() {
-//
-//        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//        DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-//
-//        try {
-//            dataOutputStream.writeFloat(playerPosXWorld);
-//            dataOutputStream.writeFloat(playerPosYWorld);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        byte[] data = byteArrayOutputStream.toByteArray();
-//        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, clientIpAddress, port);
-//
-//        try {
-//            serverSocket.send(datagramPacket);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//
-//    }
-
 
 }

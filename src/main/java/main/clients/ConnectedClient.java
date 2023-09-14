@@ -1,4 +1,4 @@
-package main;
+package main.clients;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -11,10 +11,10 @@ public class ConnectedClient {
 
     public InetAddress clientIPaddress;
     public int port;
-    public PlayerMovementHandler playerMovementHandler;
+    public PlayerClass playerClass;
 
     public ConnectedClient(InetAddress clientIPaddress, int port) {
-        playerMovementHandler = new PlayerMovementHandler();
+        playerClass = new PlayerClass();
 
         this.clientIPaddress = clientIPaddress;
         this.port = port;

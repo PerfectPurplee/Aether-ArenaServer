@@ -1,7 +1,13 @@
 package main;
 
+import datatransferobjects.Spell01DTO;
+import main.clients.ConnectedClient;
+
 import java.io.*;
 import java.net.DatagramPacket;
+import java.util.stream.Collectors;
+
+import static main.EnumContainer.*;
 
 public abstract class PacketManager {
 
@@ -15,9 +21,9 @@ public abstract class PacketManager {
 
         try {
             dataOutputStream.writeInt(packetType);
-            dataOutputStream.writeInt(client.playerMovementHandler.clientID);
-            dataOutputStream.writeFloat(client.playerMovementHandler.playerPosXWorld);
-            dataOutputStream.writeFloat(client.playerMovementHandler.playerPosYWorld);
+            dataOutputStream.writeInt(client.playerClass.clientID);
+            dataOutputStream.writeFloat(client.playerClass.playerPosXWorld);
+            dataOutputStream.writeFloat(client.playerClass.playerPosYWorld);
             dataOutputStream.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -44,7 +50,7 @@ public abstract class PacketManager {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
 
-        EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared = client.playerMovementHandler.PlayerChampion;
+        ServerClientConnectionCopyObjects.PLayer_Champion_Shared = client.playerClass.PlayerChampion;
 
         try {
 
@@ -53,14 +59,13 @@ public abstract class PacketManager {
 
 
             for (int i = 0; i < ConnectedClient.listOfConnectedClients.size(); i++) {
-                EnumContainer.ServerClientConnectionCopyObjects.Current_Player_State_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.Current_Player_State;
-                EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared = ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.PlayerChampion;
-                objectOutputStream.writeInt(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.clientID);
-                objectOutputStream.writeObject(EnumContainer.ServerClientConnectionCopyObjects.Current_Player_State_Shared);
-                objectOutputStream.writeObject(EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
-                objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosXWorld);
-                objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerMovementHandler.playerPosYWorld);
-
+                ServerClientConnectionCopyObjects.Current_Player_State_Shared = ConnectedClient.listOfConnectedClients.get(i).playerClass.Current_Player_State;
+                ServerClientConnectionCopyObjects.PLayer_Champion_Shared = ConnectedClient.listOfConnectedClients.get(i).playerClass.PlayerChampion;
+                objectOutputStream.writeInt(ConnectedClient.listOfConnectedClients.get(i).playerClass.clientID);
+                objectOutputStream.writeObject(ServerClientConnectionCopyObjects.Current_Player_State_Shared);
+                objectOutputStream.writeObject(ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
+                objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerClass.playerPosXWorld);
+                objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerClass.playerPosYWorld);
 
 
             }
@@ -82,6 +87,46 @@ public abstract class PacketManager {
 
         return datagramPacket;
     }
+
+    public static DatagramPacket updateAllPlayerSpells(ConnectedClient client) throws IOException {
+
+        final int packetType = 2;
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+
+        try {
+
+            objectOutputStream.writeInt(packetType);
+            objectOutputStream.writeInt(client.playerClass.clientID);
+            synchronized (Spell01DTO.listOfAllSpell01DTO) {
+
+                    Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
+                            spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
+                                    spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
+                                    spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
+                objectOutputStream.writeObject(Spell01DTO.listOfAllSpell01DTO);
+            }
+            objectOutputStream.flush();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        byte[] data = byteArrayOutputStream.toByteArray();
+        System.out.println(data.length);
+        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, client.clientIPaddress, client.port);
+
+        try {
+            byteArrayOutputStream.close();
+            objectOutputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return datagramPacket;
+    }
+
 
 }
 

@@ -1,7 +1,12 @@
 package main;
 
-public abstract class EnumContainer {
+import main.clients.spells.Spell01;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class EnumContainer {
 
 
     public enum AllPlayerStates {
@@ -26,6 +31,10 @@ public abstract class EnumContainer {
 
         public static AllPlayableChampions PLayer_Champion_Shared;
 
+        public static Boolean[] ArrayOfPlayerCreateSpellRequests = new Boolean[4];
 
+        public static Point currentMousePosition;
+
+        public static List<Spell01> listOfAllActiveSpellsCopy = new ArrayList<>();
     }
 }

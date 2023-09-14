@@ -1,8 +1,13 @@
-package main;
+package main.clients;
+
+import main.EnumContainer;
+import main.clients.spells.Spell01;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PlayerMovementHandler implements Serializable {
+public class PlayerClass implements Serializable {
 
 
     public EnumContainer.AllPlayerStates Current_Player_State;
@@ -16,16 +21,21 @@ public class PlayerMovementHandler implements Serializable {
     public boolean isPlayerMoving;
     private int playerFeetX, playerFeetY;
     //    counter how many players connected to move handler and based on that determine their starting position
-    public static int counter = 0;
-    public int clientID;
+    public static int counterOfConnectedClients = 0;
+    public final int clientID;
+
+    public int counterOfThisPlayerQSpells;
+
+    public List<Spell01> listOfAllActive_Q_Spells = new ArrayList<>();
 
 
-    public PlayerMovementHandler() {
+    public PlayerClass() {
         setPlayerChampion(EnumContainer.ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
         Current_Player_State = EnumContainer.AllPlayerStates.IDLE_DOWN;
+        clientID = counterOfConnectedClients;
         playerStartingPosition();
-        clientID = counter;
-        counter++;
+
+        counterOfConnectedClients++;
 
     }
 
@@ -46,13 +56,13 @@ public class PlayerMovementHandler implements Serializable {
 
     private void playerStartingPosition() {
 
-        if (counter == 0) {
+        if (clientID == 0) {
             playerPosXWorld = 100;
             playerPosYWorld = 100;
-        } else if (counter == 1) {
+        } else if (clientID == 1) {
             playerPosXWorld = 600;
             playerPosYWorld = 100;
-        } else if (counter == 2) {
+        } else if (clientID == 2) {
             playerPosXWorld = 100;
             playerPosYWorld = 600;
 
@@ -154,6 +164,25 @@ public class PlayerMovementHandler implements Serializable {
     public void setPlayerMovementStartingPosition(float playerPosXWorld, float playerPosYWorld) {
         this.playerMovementStartingPosX = playerPosXWorld + playerFeetX;
         this.playerMovementStartingPosY = playerPosYWorld + playerFeetY;
+    }
+
+    public void spellCastController() {
+
+        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[0]) {
+            new Spell01(this);
+        }
+        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[1]) {
+            new Spell01(this);
+
+        }
+        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[2]) {
+            new Spell01(this);
+
+        }
+        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[3]) {
+            new Spell01(this);
+
+        }
     }
 
 }
