@@ -101,13 +101,15 @@ public abstract class PacketManager {
             objectOutputStream.writeInt(client.playerClass.clientID);
             synchronized (Spell01DTO.listOfAllSpell01DTO) {
 
-                    Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
-                            spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
-                                    spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
-                                    spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
+                Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
+                        spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
+                                spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
+                                spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
+            } synchronized (Spell01DTO.listOfAllSpell01DTO) {
                 objectOutputStream.writeObject(Spell01DTO.listOfAllSpell01DTO);
+                objectOutputStream.flush();
             }
-            objectOutputStream.flush();
+
 
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -57,11 +57,11 @@ public class PlayerClass implements Serializable {
     private void playerStartingPosition() {
 
         if (clientID == 0) {
-            playerPosXWorld = 100;
-            playerPosYWorld = 100;
+            playerPosXWorld = 800;
+            playerPosYWorld = 1900;
         } else if (clientID == 1) {
             playerPosXWorld = 600;
-            playerPosYWorld = 100;
+            playerPosYWorld = 1900;
         } else if (clientID == 2) {
             playerPosXWorld = 100;
             playerPosYWorld = 600;
