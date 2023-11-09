@@ -2,7 +2,6 @@ package main.clients.spells;
 
 
 import datatransferobjects.Spell01DTO;
-import main.Server;
 import main.ServerEngine;
 import main.clients.PlayerClass;
 
@@ -10,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.EnumContainer.*;
+import static main.EnumContainer.ServerClientConnectionCopyObjects;
 
 
 public class Spell01 {
@@ -25,8 +24,9 @@ public class Spell01 {
     public float normalizedVectorY;
     public int mousePosXWorld, mousePosYWorld;
 
-    private final float playerPosXWorlInMomentOfSpellCreation;
-    private final float playerPosYWorldInMomentOfSpellCreation;
+
+
+    PlayerClass playerCastingThisSpell;
 
     public final int spellCasterClientID;
     public final int spellID;
@@ -34,11 +34,13 @@ public class Spell01 {
     public static List<Spell01> listOfActiveSpell01s = new ArrayList<>();
 
     public Spell01(PlayerClass playerCastingThisSpell) {
-        this.playerPosXWorlInMomentOfSpellCreation = playerCastingThisSpell.playerPosXWorld;
-        this.playerPosYWorldInMomentOfSpellCreation = playerCastingThisSpell.playerPosYWorld;
+        this.playerCastingThisSpell = playerCastingThisSpell;
+
         getVector();
-        spellPosXWorld = (playerPosXWorlInMomentOfSpellCreation + 62) + (normalizedVectorX * 150);
-        spellPosYWorld = (playerPosYWorldInMomentOfSpellCreation + 62) + (normalizedVectorY * 150);
+        spellPosXWorld = ((playerCastingThisSpell.playerHitbox.x + (playerCastingThisSpell.playerHitbox.width / 2 - 32)
+                + (normalizedVectorX * 125)));
+        spellPosYWorld = ((playerCastingThisSpell.playerHitbox.y + playerCastingThisSpell.playerHitbox.height / 2 - 32)
+                + (normalizedVectorY * 125));
 
         spellCasterClientID = playerCastingThisSpell.clientID;
         spellID = playerCastingThisSpell.counterOfThisPlayerQSpells;
@@ -58,8 +60,10 @@ public class Spell01 {
     private void getVector() {
         mousePosXWorld = (int) (ServerClientConnectionCopyObjects.currentMousePosition.getX());
         mousePosYWorld = (int) (ServerClientConnectionCopyObjects.currentMousePosition.getY());
-        float vectorX = (float) (mousePosXWorld - (playerPosXWorlInMomentOfSpellCreation + 72));
-        float vectorY = (float) (mousePosYWorld - (playerPosYWorldInMomentOfSpellCreation + 72));
+        float vectorX = (float)
+                (mousePosXWorld - (playerCastingThisSpell.playerHitbox.x + playerCastingThisSpell.playerHitbox.width / 2));
+        float vectorY = (float)
+                (mousePosYWorld - (playerCastingThisSpell.playerHitbox.y + playerCastingThisSpell.playerHitbox.height / 2));
         float magnitude = (float) Math.sqrt(vectorX * vectorX + vectorY * vectorY);
         normalizedVectorX = (vectorX / magnitude);
         normalizedVectorY = (vectorY / magnitude);

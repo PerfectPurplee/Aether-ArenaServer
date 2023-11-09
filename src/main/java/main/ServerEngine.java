@@ -10,8 +10,8 @@ public class ServerEngine extends Thread {
     Server server;
     private final int UPS_SET = 128;
 
-    public static final int gameMapWidth = 3840;
-    public static final int gameMapHeight = 2160;
+    public static final int gameMapWidth = 1920;
+    public static final int gameMapHeight = 1080;
 
     public ServerEngine() {
         server = new Server();
@@ -22,8 +22,10 @@ public class ServerEngine extends Thread {
 
     private synchronized void update() {
 //        UPDATE ALL CLIENTS PLAYER POSITIONS AND CHOOSE SPRITE FOR ANIMATION
-        ConnectedClient.listOfConnectedClients.forEach(connectedClient ->
-                connectedClient.playerClass.moveController());
+        ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
+            connectedClient.playerClass.moveController();
+            connectedClient.playerClass.updatePlayerHitboxWorld();
+        });
 
         Spell01.updateAllSpells01();
 
