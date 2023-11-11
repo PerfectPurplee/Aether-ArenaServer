@@ -51,7 +51,7 @@ public class Server extends Thread {
 
             int packetType = dataInputStream.readInt();
 
-            System.out.println("Server  recived packet TYPE:" + packetType);
+//            System.out.println("Server  recived packet TYPE:" + packetType);
 
 
 //           PACKET TYPE 0 IS LOGIN PACKET FOR NEW CLIENT

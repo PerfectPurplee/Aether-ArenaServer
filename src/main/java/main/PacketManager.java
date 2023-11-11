@@ -3,11 +3,15 @@ package main;
 import datatransferobjects.Spell01DTO;
 import main.clients.ConnectedClient;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static main.EnumContainer.*;
+import static main.EnumContainer.ServerClientConnectionCopyObjects;
 
 public abstract class PacketManager {
 
@@ -88,27 +92,55 @@ public abstract class PacketManager {
         return datagramPacket;
     }
 
-    public static DatagramPacket updateAllPlayerSpells(ConnectedClient client) throws IOException {
+    public static List<DatagramPacket> updateAllPlayerSpells(ConnectedClient client) throws IOException {
 
         final int packetType = 2;
+        final int maxDataLength = 1406;
+        final int loopByteSize = 24;
+        int byteSize = 14;
+
+        List<DatagramPacket> packetList = new ArrayList<>();
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+        ObjectOutputStream dataOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
         try {
 
-            objectOutputStream.writeInt(packetType);
-            objectOutputStream.writeInt(client.playerClass.clientID);
+            dataOutputStream.writeInt(packetType);
+            dataOutputStream.writeInt(client.playerClass.clientID);
             synchronized (Spell01DTO.listOfAllSpell01DTO) {
 
                 Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
                         spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
                                 spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
                                 spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
-            } synchronized (Spell01DTO.listOfAllSpell01DTO) {
-                objectOutputStream.writeObject(Spell01DTO.listOfAllSpell01DTO);
-                objectOutputStream.flush();
             }
+            for (Spell01DTO spellDTO : Spell01DTO.listOfAllSpell01DTO) {
+                if (byteSize > maxDataLength) {
+                    dataOutputStream.flush();
+
+                    byte[] data = byteArrayOutputStream.toByteArray();
+                    DatagramPacket datagramPacket = new DatagramPacket(data, data.length, client.clientIPaddress, client.port);
+                    packetList.add(datagramPacket);
+                    byteArrayOutputStream.close();
+                    dataOutputStream.close();
+
+                    byteArrayOutputStream = new ByteArrayOutputStream();
+                    dataOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+
+                    dataOutputStream.writeInt(packetType);
+                    dataOutputStream.writeInt(client.playerClass.clientID);
+                }
+                dataOutputStream.writeInt(spellDTO.spellID);
+                dataOutputStream.writeInt(spellDTO.spellCasterClientID);
+                dataOutputStream.writeFloat(spellDTO.normalizedVectorX);
+                dataOutputStream.writeFloat(spellDTO.normalizedVectorY);
+                dataOutputStream.writeFloat(spellDTO.spellPosXWorld);
+                dataOutputStream.writeFloat(spellDTO.spellPosYWorld);
+
+                byteSize += loopByteSize;
+            }
+            dataOutputStream.flush();
 
 
         } catch (IOException e) {
@@ -116,17 +148,20 @@ public abstract class PacketManager {
         }
 
         byte[] data = byteArrayOutputStream.toByteArray();
-        System.out.println(data.length);
+//        System.out.println(data.length);
+
         DatagramPacket datagramPacket = new DatagramPacket(data, data.length, client.clientIPaddress, client.port);
+        packetList.add(datagramPacket);
+
 
         try {
             byteArrayOutputStream.close();
-            objectOutputStream.close();
+            dataOutputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return datagramPacket;
+        System.out.println("packet size" + packetList.size() + " Whole data length: " + data.length);
+        return packetList;
     }
 
 
