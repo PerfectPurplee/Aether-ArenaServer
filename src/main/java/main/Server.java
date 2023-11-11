@@ -78,6 +78,7 @@ public class Server extends Thread {
                     connectedClient.get().playerClass.setVectorForPlayerMovement();
                 }
             }
+//            SPELL CASTING PACKET
             if (packetType == 2) {
 
                 int connectedClientID = dataInputStream.readInt();

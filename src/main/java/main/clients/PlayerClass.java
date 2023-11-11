@@ -85,7 +85,7 @@ public class PlayerClass implements Serializable {
     public void setCurrent_Player_State() {
 
         if (isPlayerMoving) {
-            if (mouseClickXPos < playerMovementStartingPosX + playerFeetX) {
+            if (mouseClickXPos < playerPosXWorld + playerFeetX) {
                 Current_Player_State = EnumContainer.AllPlayerStates.MOVING_LEFT;
             } else {
                 Current_Player_State = EnumContainer.AllPlayerStates.MOVING_RIGHT;
