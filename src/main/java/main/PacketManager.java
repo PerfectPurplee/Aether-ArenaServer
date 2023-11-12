@@ -2,6 +2,7 @@ package main;
 
 import datatransferobjects.Spell01DTO;
 import main.clients.ConnectedClient;
+import main.clients.spells.Spell01;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -108,14 +109,14 @@ public abstract class PacketManager {
 
             dataOutputStream.writeInt(packetType);
             dataOutputStream.writeInt(client.playerClass.clientID);
-            synchronized (Spell01DTO.listOfAllSpell01DTO) {
+//            synchronized (Spell01DTO.listOfAllSpell01DTO) {
 
-                Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
-                        spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
-                                spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
-                                spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
-            }
-            for (Spell01DTO spellDTO : Spell01DTO.listOfAllSpell01DTO) {
+//                Spell01DTO.listOfAllSpell01DTO = Spell01DTO.listOfAllSpell01DTO.stream().filter(spell01DTO ->
+//                        spell01DTO.spellPosXWorld >= -64 && spell01DTO.spellPosYWorld >= -64 &&
+//                                spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
+//                                spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
+//            }
+            for (Spell01 spell01 : Spell01.listOfActiveSpell01s) {
                 if (byteSize > maxDataLength) {
                     dataOutputStream.flush();
 
@@ -131,12 +132,12 @@ public abstract class PacketManager {
                     dataOutputStream.writeInt(packetType);
                     dataOutputStream.writeInt(client.playerClass.clientID);
                 }
-                dataOutputStream.writeInt(spellDTO.spellID);
-                dataOutputStream.writeInt(spellDTO.spellCasterClientID);
-                dataOutputStream.writeFloat(spellDTO.normalizedVectorX);
-                dataOutputStream.writeFloat(spellDTO.normalizedVectorY);
-                dataOutputStream.writeFloat(spellDTO.spellPosXWorld);
-                dataOutputStream.writeFloat(spellDTO.spellPosYWorld);
+                dataOutputStream.writeInt(spell01.spellID);
+                dataOutputStream.writeInt(spell01.spellCasterClientID);
+                dataOutputStream.writeFloat(spell01.normalizedVectorX);
+                dataOutputStream.writeFloat(spell01.normalizedVectorY);
+                dataOutputStream.writeFloat(spell01.spellPosXWorld);
+                dataOutputStream.writeFloat(spell01.spellPosYWorld);
 
                 byteSize += loopByteSize;
             }
