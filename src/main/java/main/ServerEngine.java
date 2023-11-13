@@ -4,6 +4,8 @@ import main.clients.ConnectedClient;
 import main.clients.spells.Spell01;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.util.List;
 
 public class ServerEngine extends Thread {
 
@@ -30,11 +32,14 @@ public class ServerEngine extends Thread {
         Spell01.updateAllSpells01();
 
 
-
         ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
             try {
                 server.serverSocket.send(PacketManager.UpdateAllPlayersPositionsPacket(connectedClient));
-                server.serverSocket.send(PacketManager.updateAllPlayerSpells(connectedClient));
+                List<DatagramPacket> packetList = PacketManager.updateAllPlayerSpells(connectedClient);
+                for (DatagramPacket packet : packetList) {
+                    server.serverSocket.send(packet);
+                }
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

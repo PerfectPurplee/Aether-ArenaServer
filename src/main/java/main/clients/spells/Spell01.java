@@ -25,7 +25,6 @@ public class Spell01 {
     public int mousePosXWorld, mousePosYWorld;
 
 
-
     PlayerClass playerCastingThisSpell;
 
     public final int spellCasterClientID;
@@ -33,8 +32,10 @@ public class Spell01 {
 
     public static List<Spell01> listOfActiveSpell01s = new ArrayList<>();
 
-    public Spell01(PlayerClass playerCastingThisSpell) {
+    public Spell01(PlayerClass playerCastingThisSpell, int spellID) {
         this.playerCastingThisSpell = playerCastingThisSpell;
+        this.spellID = spellID;
+        spellCasterClientID = playerCastingThisSpell.clientID;
 
         getVector();
         spellPosXWorld = ((playerCastingThisSpell.playerHitbox.x + (playerCastingThisSpell.playerHitbox.width / 2 - 32)
@@ -42,9 +43,7 @@ public class Spell01 {
         spellPosYWorld = ((playerCastingThisSpell.playerHitbox.y + playerCastingThisSpell.playerHitbox.height / 2 - 32)
                 + (normalizedVectorY * 125));
 
-        spellCasterClientID = playerCastingThisSpell.clientID;
-        spellID = playerCastingThisSpell.counterOfThisPlayerQSpells;
-        playerCastingThisSpell.counterOfThisPlayerQSpells++;
+
 
         synchronized (listOfActiveSpell01s) {
             listOfActiveSpell01s.add(this);
@@ -53,7 +52,7 @@ public class Spell01 {
             playerCastingThisSpell.listOfAllActive_Q_Spells.add(this);
         }
 
-        spell01DTO = new Spell01DTO(this);
+//        spell01DTO = new Spell01DTO(this);
     }
 
 
@@ -72,8 +71,8 @@ public class Spell01 {
     private void spellPositionUpdate() {
         spellPosXWorld += (normalizedVectorX * SPEED);
         spellPosYWorld += (normalizedVectorY * SPEED);
-        spell01DTO.spellPosXWorld = spellPosXWorld;
-        spell01DTO.spellPosYWorld = spellPosYWorld;
+//        spell01DTO.spellPosXWorld = spellPosXWorld;
+//        spell01DTO.spellPosYWorld = spellPosYWorld;
 
     }
 

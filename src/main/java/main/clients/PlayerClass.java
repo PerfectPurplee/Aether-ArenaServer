@@ -119,21 +119,23 @@ public class PlayerClass implements Serializable {
         this.playerMovementStartingPosY = playerPosYWorld + playerFeetY;
     }
 
-    public void spellCastController() {
+    public void spellCastController(
+            boolean shouldCreateSpellQ, boolean shouldCreateSpellW,
+            boolean shouldCreateSpellE, boolean shouldCreateSpellR, int spellID) {
 
-        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[0]) {
-            new Spell01(this);
+        if (shouldCreateSpellQ) {
+            new Spell01(this, spellID);
         }
-        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[1]) {
-            new Spell01(this);
-
-        }
-        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[2]) {
-            new Spell01(this);
+        if (shouldCreateSpellW) {
+            new Spell01(this, spellID);
 
         }
-        if (EnumContainer.ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests[3]) {
-            new Spell01(this);
+        if (shouldCreateSpellE) {
+            new Spell01(this, spellID);
+
+        }
+        if (shouldCreateSpellR) {
+            new Spell01(this, spellID);
 
         }
     }

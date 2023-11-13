@@ -3,11 +3,14 @@ package main;
 import main.clients.ConnectedClient;
 
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.*;
 import java.util.Optional;
 
-import static main.EnumContainer.*;
+import static main.EnumContainer.AllPlayableChampions;
+import static main.EnumContainer.ServerClientConnectionCopyObjects;
 
 public class Server extends Thread {
 
@@ -51,7 +54,7 @@ public class Server extends Thread {
 
             int packetType = dataInputStream.readInt();
 
-            System.out.println("Server  recived packet TYPE:" + packetType);
+//            System.out.println("Server  recived packet TYPE:" + packetType);
 
 
 //           PACKET TYPE 0 IS LOGIN PACKET FOR NEW CLIENT
@@ -89,11 +92,26 @@ public class Server extends Thread {
                             .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
 
                     if (connectedClient.isPresent()) {
-                        ServerClientConnectionCopyObjects.ArrayOfPlayerCreateSpellRequests = (Boolean[]) dataInputStream.readObject();
+                        boolean shouldCreateSpellQ = false;
+                        boolean shouldCreateSpellW = false;
+                        boolean shouldCreateSpellE = false;
+                        boolean shouldCreateSpellR = false;
+                        char spellType = dataInputStream.readChar();
+                        int spellID = dataInputStream.readInt();
+                        if (spellType == 'Q') {
+                            shouldCreateSpellQ = true;
+                        }
+                        if (spellType == 'W') {
+                            shouldCreateSpellW = true;
+                        }
+                        if (spellType == 'E') {
+                            shouldCreateSpellE = true;
+                        }
+                        if (spellType == 'R') {
+                            shouldCreateSpellR = true;
+                        }
                         ServerClientConnectionCopyObjects.currentMousePosition = (Point) dataInputStream.readObject();
-                        System.out.println("success");
-                        connectedClient.get().playerClass.spellCastController();
-
+                        connectedClient.get().playerClass.spellCastController(shouldCreateSpellQ, shouldCreateSpellW, shouldCreateSpellE, shouldCreateSpellR, spellID);
                     }
                 }
             }
