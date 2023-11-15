@@ -1,8 +1,8 @@
 package main;
 
-import datatransferobjects.Spell01DTO;
 import main.clients.ConnectedClient;
-import main.clients.spells.Spell01;
+import main.clients.spells.QSpell;
+import main.clients.spells.Ultimate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static main.EnumContainer.ServerClientConnectionCopyObjects;
 
@@ -46,7 +45,7 @@ public abstract class PacketManager {
         return datagramPacket;
     }
 
-    public static DatagramPacket UpdateAllPlayersPositionsPacket(ConnectedClient client) throws IOException {
+    public static DatagramPacket UpdateAllPlayersPositionsAndHPPacket(ConnectedClient client) throws IOException {
 
         final int packetType = 1;
         final int howManyPlayersToUpdate = ConnectedClient.listOfConnectedClients.size();
@@ -71,7 +70,7 @@ public abstract class PacketManager {
                 objectOutputStream.writeObject(ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerClass.playerPosXWorld);
                 objectOutputStream.writeFloat(ConnectedClient.listOfConnectedClients.get(i).playerClass.playerPosYWorld);
-
+                objectOutputStream.writeInt(ConnectedClient.listOfConnectedClients.get(i).playerClass.currentHealth);
 
             }
             objectOutputStream.flush();
@@ -116,7 +115,7 @@ public abstract class PacketManager {
 //                                spell01DTO.spellPosXWorld <= ServerEngine.gameMapWidth + 64 &&
 //                                spell01DTO.spellPosYWorld <= ServerEngine.gameMapHeight + 64).collect(Collectors.toList());
 //            }
-            for (Spell01 spell01 : Spell01.listOfActiveSpell01s) {
+            for (QSpell QSpell : QSpell.listOfActiveQSpells) {
                 if (byteSize > maxDataLength) {
                     dataOutputStream.flush();
 
@@ -132,12 +131,16 @@ public abstract class PacketManager {
                     dataOutputStream.writeInt(packetType);
                     dataOutputStream.writeInt(client.playerClass.clientID);
                 }
-                dataOutputStream.writeInt(spell01.spellID);
-                dataOutputStream.writeInt(spell01.spellCasterClientID);
-                dataOutputStream.writeFloat(spell01.normalizedVectorX);
-                dataOutputStream.writeFloat(spell01.normalizedVectorY);
-                dataOutputStream.writeFloat(spell01.spellPosXWorld);
-                dataOutputStream.writeFloat(spell01.spellPosYWorld);
+                dataOutputStream.writeInt(QSpell.spellID);
+                dataOutputStream.writeInt(QSpell.spellCasterClientID);
+                dataOutputStream.writeFloat(QSpell.normalizedVectorX);
+                dataOutputStream.writeFloat(QSpell.normalizedVectorY);
+                dataOutputStream.writeFloat(QSpell.spellPosXWorld);
+                dataOutputStream.writeFloat(QSpell.spellPosYWorld);
+                dataOutputStream.writeDouble(QSpell.spriteAngle);
+                if (QSpell instanceof Ultimate) {
+                    dataOutputStream.writeInt(1);
+                } else dataOutputStream.writeInt(0);
 
                 byteSize += loopByteSize;
             }

@@ -1,11 +1,12 @@
 package datatransferobjects;
 
-import main.clients.spells.Spell01;
+import main.clients.spells.QSpell;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Spell01DTO implements Serializable {
 
@@ -19,22 +20,21 @@ public class Spell01DTO implements Serializable {
     public final int spellID;
     public final int spellCasterClientID;
 
-    public static List<Spell01DTO> listOfAllSpell01DTO = new ArrayList<>();
+    public static CopyOnWriteArrayList<Spell01DTO> listOfAllSpell01DTO = new CopyOnWriteArrayList<>();
 
-    public Spell01DTO(Spell01 spell01) {
-        spellPosXWorld = spell01.spellPosXWorld;
-        spellPosYWorld = spell01.spellPosYWorld;
-        normalizedVectorX = spell01.normalizedVectorX;
-        normalizedVectorY = spell01.normalizedVectorY;
+    public Spell01DTO(QSpell QSpell) {
+        spellPosXWorld = QSpell.spellPosXWorld;
+        spellPosYWorld = QSpell.spellPosYWorld;
+        normalizedVectorX = QSpell.normalizedVectorX;
+        normalizedVectorY = QSpell.normalizedVectorY;
 
-        spellCasterClientID = spell01.spellCasterClientID;
-        spellID = spell01.spellID;
+        spellCasterClientID = QSpell.spellCasterClientID;
+        spellID = QSpell.spellID;
 
-        synchronized (listOfAllSpell01DTO) {
-            listOfAllSpell01DTO.add(this);
-        }
+
+        listOfAllSpell01DTO.add(this);
+
     }
-
 
 
 }

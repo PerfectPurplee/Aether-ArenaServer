@@ -3,10 +3,11 @@ package main.clients;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConnectedClient {
 
-    public static List<ConnectedClient> listOfConnectedClients = new ArrayList<>();
+    public static CopyOnWriteArrayList<ConnectedClient> listOfConnectedClients = new CopyOnWriteArrayList<>();
 
 
     public InetAddress clientIPaddress;

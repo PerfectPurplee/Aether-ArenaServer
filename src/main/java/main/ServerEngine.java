@@ -1,7 +1,7 @@
 package main;
 
 import main.clients.ConnectedClient;
-import main.clients.spells.Spell01;
+import main.clients.spells.QSpell;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,8 +12,8 @@ public class ServerEngine extends Thread {
     Server server;
     private final int UPS_SET = 128;
 
-    public static final int gameMapWidth = 1920;
-    public static final int gameMapHeight = 1080;
+    public static final int gameMapWidth = 3840;
+    public static final int gameMapHeight = 2160;
 
     public ServerEngine() {
         server = new Server();
@@ -22,19 +22,21 @@ public class ServerEngine extends Thread {
     }
 
 
-    private synchronized void update() {
+    private void update() {
 //        UPDATE ALL CLIENTS PLAYER POSITIONS AND CHOOSE SPRITE FOR ANIMATION
         ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
             connectedClient.playerClass.moveController();
             connectedClient.playerClass.updatePlayerHitboxWorld();
+            connectedClient.playerClass.dashController();
         });
+        QSpell.updateAllSpells01();
 
-        Spell01.updateAllSpells01();
+        checkIfAnyPlayerGotHit();
 
 
         ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
             try {
-                server.serverSocket.send(PacketManager.UpdateAllPlayersPositionsPacket(connectedClient));
+                server.serverSocket.send(PacketManager.UpdateAllPlayersPositionsAndHPPacket(connectedClient));
                 List<DatagramPacket> packetList = PacketManager.updateAllPlayerSpells(connectedClient);
                 for (DatagramPacket packet : packetList) {
                     server.serverSocket.send(packet);
@@ -80,5 +82,28 @@ public class ServerEngine extends Thread {
 
             }
         }
+    }
+
+    private void checkIfAnyPlayerGotHit() {
+
+//        For each spell check if any player got hit
+
+        QSpell.listOfActiveQSpells.forEach(spell -> {
+            if (spell.spell01Hitbox != null) {
+
+                ConnectedClient.listOfConnectedClients
+                        .stream()
+                        .filter(onlinePlayer -> onlinePlayer.playerClass.playerHitbox.intersects(spell.spell01Hitbox)
+                                && onlinePlayer.playerClass.clientID != spell.spellCasterClientID)
+                        .forEach(onlinePlayerFiltered -> {
+                            if (onlinePlayerFiltered.playerClass.currentHealth > 0) {
+                                onlinePlayerFiltered.playerClass.currentHealth = onlinePlayerFiltered.playerClass.currentHealth - 50;
+                            }
+                            spell.playerGotHit = true;
+                        });
+
+            }
+        });
+
     }
 }

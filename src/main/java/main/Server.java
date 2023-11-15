@@ -69,10 +69,10 @@ public class Server extends Thread {
                 int connectedClientID = dataInputStream.readInt();
 
                 Optional<ConnectedClient> connectedClient;
-                synchronized (ConnectedClient.listOfConnectedClients) {
-                    connectedClient = ConnectedClient.listOfConnectedClients.stream()
-                            .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
-                }
+
+                connectedClient = ConnectedClient.listOfConnectedClients.stream()
+                        .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
+
                 if (connectedClient.isPresent()) {
 
                     connectedClient.get().playerClass.mouseClickXPos = dataInputStream.readInt();
@@ -87,7 +87,7 @@ public class Server extends Thread {
                 int connectedClientID = dataInputStream.readInt();
 
                 Optional<ConnectedClient> connectedClient;
-                synchronized (ConnectedClient.listOfConnectedClients) {
+
                     connectedClient = ConnectedClient.listOfConnectedClients.stream()
                             .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
 
@@ -96,8 +96,10 @@ public class Server extends Thread {
                         boolean shouldCreateSpellW = false;
                         boolean shouldCreateSpellE = false;
                         boolean shouldCreateSpellR = false;
+                        boolean shouldDash = false;
                         char spellType = dataInputStream.readChar();
                         int spellID = dataInputStream.readInt();
+                        double spriteAngle = dataInputStream.readDouble();
                         if (spellType == 'Q') {
                             shouldCreateSpellQ = true;
                         }
@@ -110,10 +112,13 @@ public class Server extends Thread {
                         if (spellType == 'R') {
                             shouldCreateSpellR = true;
                         }
+                        if (spellType == 'D') {
+                            shouldDash = true;
+                        }
                         ServerClientConnectionCopyObjects.currentMousePosition = (Point) dataInputStream.readObject();
-                        connectedClient.get().playerClass.spellCastController(shouldCreateSpellQ, shouldCreateSpellW, shouldCreateSpellE, shouldCreateSpellR, spellID);
+                        connectedClient.get().playerClass.spellCastController(shouldCreateSpellQ, shouldCreateSpellW, shouldCreateSpellE, shouldCreateSpellR, shouldDash, spellID, spriteAngle);
                     }
-                }
+
             }
 
         } catch (IOException | ClassNotFoundException e) {

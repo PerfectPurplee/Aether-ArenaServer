@@ -1,12 +1,12 @@
 package main.clients;
 
 import main.EnumContainer;
-import main.clients.spells.Spell01;
+import main.clients.spells.QSpell;
+import main.clients.spells.Ultimate;
 
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+
 
 public class PlayerClass implements Serializable {
 
@@ -16,7 +16,7 @@ public class PlayerClass implements Serializable {
     public float playerPosXWorld, playerPosYWorld;
     public int mouseClickXPos, mouseClickYPos;
     public float normalizedVectorX, normalizedVectorY;
-    private final int playerMovespeed = 2;
+    private int playerMovespeed = 2;
     public float playerMovementStartingPosX, playerMovementStartingPosY;
     public float distanceToTravel;
     public boolean isPlayerMoving;
@@ -25,9 +25,15 @@ public class PlayerClass implements Serializable {
     public static int counterOfConnectedClients = 0;
     public final int clientID;
 
+    public final int maxHealth = 4000;
+    public int currentHealth;
+    public boolean isPlayerStateLocked;
+
     public int counterOfThisPlayerQSpells;
 
-    public List<Spell01> listOfAllActive_Q_Spells = new ArrayList<>();
+    private int animationTick;
+    private final int animationSpeed = 15;
+    public int animationIndexDashing;
 
 
     public PlayerClass() {
@@ -36,7 +42,8 @@ public class PlayerClass implements Serializable {
         clientID = counterOfConnectedClients;
         playerStartingPosition();
         playerHitbox = new PlayerHitbox();
-
+        currentHealth = maxHealth;
+        isPlayerStateLocked = false;
 
         counterOfConnectedClients++;
 
@@ -69,7 +76,7 @@ public class PlayerClass implements Serializable {
 
     public void moveController() {
 
-        if (distanceToTravel > 0) {
+        if (distanceToTravel > 2) {
 
             playerPosXWorld += (playerMovespeed * normalizedVectorX);
             playerPosYWorld += (playerMovespeed * normalizedVectorY);
@@ -84,19 +91,21 @@ public class PlayerClass implements Serializable {
 
     public void setCurrent_Player_State() {
 
-        if (isPlayerMoving) {
-            if (mouseClickXPos < playerPosXWorld + playerFeetX) {
-                Current_Player_State = EnumContainer.AllPlayerStates.MOVING_LEFT;
-            } else {
-                Current_Player_State = EnumContainer.AllPlayerStates.MOVING_RIGHT;
-            }
-        } else {
-            switch (Current_Player_State) {
-                case MOVING_LEFT -> {
-                    Current_Player_State = EnumContainer.AllPlayerStates.IDLE_LEFT;
+        if (!isPlayerStateLocked) {
+            if (isPlayerMoving) {
+                if (mouseClickXPos < playerPosXWorld + playerFeetX) {
+                    Current_Player_State = EnumContainer.AllPlayerStates.MOVING_LEFT;
+                } else {
+                    Current_Player_State = EnumContainer.AllPlayerStates.MOVING_RIGHT;
                 }
-                case MOVING_RIGHT -> {
-                    Current_Player_State = EnumContainer.AllPlayerStates.IDLE_RIGHT;
+            } else {
+                switch (Current_Player_State) {
+                    case MOVING_LEFT, DASHING_LEFT -> {
+                        Current_Player_State = EnumContainer.AllPlayerStates.IDLE_LEFT;
+                    }
+                    case MOVING_RIGHT, DASHING_RIGHT -> {
+                        Current_Player_State = EnumContainer.AllPlayerStates.IDLE_RIGHT;
+                    }
                 }
             }
         }
@@ -121,22 +130,57 @@ public class PlayerClass implements Serializable {
 
     public void spellCastController(
             boolean shouldCreateSpellQ, boolean shouldCreateSpellW,
-            boolean shouldCreateSpellE, boolean shouldCreateSpellR, int spellID) {
+            boolean shouldCreateSpellE, boolean shouldCreateSpellR, boolean shouldDash, int spellID, double spriteAngle) {
 
         if (shouldCreateSpellQ) {
-            new Spell01(this, spellID);
+            new QSpell(this, spellID, spriteAngle);
         }
         if (shouldCreateSpellW) {
-            new Spell01(this, spellID);
+            new QSpell(this, spellID, spriteAngle);
 
         }
         if (shouldCreateSpellE) {
-            new Spell01(this, spellID);
+            new QSpell(this, spellID, spriteAngle);
 
         }
         if (shouldCreateSpellR) {
-            new Spell01(this, spellID);
+            new Ultimate(this, spellID, spriteAngle);
 
+        }
+        if (shouldDash) {
+            isPlayerStateLocked = true;
+            Current_Player_State = setDashStateForAnimation();
+            playerMovespeed = 4;
+        }
+    }
+
+    private EnumContainer.AllPlayerStates setDashStateForAnimation() {
+        switch (Current_Player_State) {
+
+            case IDLE_LEFT, MOVING_LEFT -> {
+                return EnumContainer.AllPlayerStates.DASHING_LEFT;
+            }
+            default -> {
+                return EnumContainer.AllPlayerStates.DASHING_RIGHT;
+            }
+        }
+    }
+
+    // Animation controller in clinet. Length of dash animation determines how long it lasts.
+    public void dashController() {
+        if (Current_Player_State == EnumContainer.AllPlayerStates.DASHING_LEFT || Current_Player_State == EnumContainer.AllPlayerStates.DASHING_RIGHT) {
+            animationTick++;
+            if (animationTick >= animationSpeed) {
+                if (animationIndexDashing < 3) animationIndexDashing++;
+                else {
+                    playerMovespeed = 2;
+                    isPlayerStateLocked = false;
+                    setCurrent_Player_State();
+                    animationIndexDashing = 0;
+                }
+
+                animationTick = 0;
+            }
         }
     }
 
@@ -155,8 +199,8 @@ public class PlayerClass implements Serializable {
             super(
                     playerPosXWorld + hitboxOffsetX,
                     playerPosYWorld + hitboxOffsetYAbovePlayerSprite,
-                    (256 - hitboxOffsetX * 2),
-                    256 - (hitboxOffsetYAbovePlayerSprite + 25));
+                    256 - (hitboxOffsetX * 2),
+                    256 - (hitboxOffsetYAbovePlayerSprite + 40));
         }
 
     }

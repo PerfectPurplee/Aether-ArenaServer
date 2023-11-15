@@ -1,6 +1,6 @@
 package main;
 
-import main.clients.spells.Spell01;
+import main.clients.spells.QSpell;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -37,6 +37,6 @@ public abstract class EnumContainer {
 
         public static Point currentMousePosition;
 
-        public static List<Spell01> listOfAllActiveSpellsCopy = new ArrayList<>();
+        public static List<QSpell> listOfAllActiveSpellsCopy = new ArrayList<>();
     }
 }
