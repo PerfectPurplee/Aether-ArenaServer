@@ -25,9 +25,13 @@ public class ServerEngine extends Thread {
     private void update() {
 //        UPDATE ALL CLIENTS PLAYER POSITIONS AND CHOOSE SPRITE FOR ANIMATION
         ConnectedClient.listOfConnectedClients.forEach(connectedClient -> {
-            connectedClient.playerClass.moveController();
-            connectedClient.playerClass.updatePlayerHitboxWorld();
-            connectedClient.playerClass.dashController();
+            if(!connectedClient.playerClass.isPlayerDead) {
+                connectedClient.playerClass.moveController();
+                connectedClient.playerClass.updatePlayerHitboxWorld();
+                connectedClient.playerClass.dashController();
+                connectedClient.playerClass.checkIsPlayerDead();
+            } else
+                connectedClient.playerClass.updateReviveCooldownAndRespawnPlayer();
         });
         QSpell.updateAllSpells01();
 
@@ -93,7 +97,8 @@ public class ServerEngine extends Thread {
 
                 ConnectedClient.listOfConnectedClients
                         .stream()
-                        .filter(onlinePlayer -> onlinePlayer.playerClass.playerHitbox.intersects(spell.spell01Hitbox)
+                        .filter(onlinePlayer -> !onlinePlayer.playerClass.isPlayerDead
+                                && onlinePlayer.playerClass.playerHitbox.intersects(spell.spell01Hitbox)
                                 && onlinePlayer.playerClass.clientID != spell.spellCasterClientID)
                         .forEach(onlinePlayerFiltered -> {
                             if (onlinePlayerFiltered.playerClass.currentHealth > 0) {

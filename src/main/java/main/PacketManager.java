@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static main.EnumContainer.ServerClientConnectionCopyObjects;
 
@@ -166,6 +167,65 @@ public abstract class PacketManager {
         }
         System.out.println("packet size" + packetList.size() + " Whole data length: " + data.length);
         return packetList;
+    }
+
+    public static DatagramPacket playerChangedChampionInformationPacket(ConnectedClient clientToSendPacket, Optional<ConnectedClient> clientThatChangedHero) throws IOException {
+
+        final int packetType = 3;
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+
+
+        ServerClientConnectionCopyObjects.PLayer_Champion_Shared = clientThatChangedHero.get().playerClass.PlayerChampion;
+        try {
+            objectOutputStream.writeInt(packetType);
+            objectOutputStream.writeInt(clientThatChangedHero.get().playerClass.clientID);
+            objectOutputStream.writeObject(ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
+            objectOutputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] data = byteArrayOutputStream.toByteArray();
+        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, clientToSendPacket.clientIPaddress, clientToSendPacket.port);
+
+
+        try {
+            byteArrayOutputStream.close();
+            objectOutputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return datagramPacket;
+    }
+
+    public static DatagramPacket playerDisconnectedInformationPacket(ConnectedClient client, int disconnectedClientID) throws IOException {
+
+        final int packetType = 4;
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+
+        try {
+            objectOutputStream.writeInt(packetType);
+            objectOutputStream.writeInt(disconnectedClientID);
+            objectOutputStream.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] data = byteArrayOutputStream.toByteArray();
+        DatagramPacket datagramPacket = new DatagramPacket(data, data.length, client.clientIPaddress, client.port);
+
+
+        try {
+            byteArrayOutputStream.close();
+            objectOutputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return datagramPacket;
     }
 
 

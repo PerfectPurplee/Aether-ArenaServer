@@ -88,42 +88,81 @@ public class Server extends Thread {
 
                 Optional<ConnectedClient> connectedClient;
 
-                    connectedClient = ConnectedClient.listOfConnectedClients.stream()
-                            .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
+                connectedClient = ConnectedClient.listOfConnectedClients.stream()
+                        .filter(element -> element.playerClass.clientID == connectedClientID).findFirst();
 
-                    if (connectedClient.isPresent()) {
-                        boolean shouldCreateSpellQ = false;
-                        boolean shouldCreateSpellW = false;
-                        boolean shouldCreateSpellE = false;
-                        boolean shouldCreateSpellR = false;
-                        boolean shouldDash = false;
-                        char spellType = dataInputStream.readChar();
-                        int spellID = dataInputStream.readInt();
-                        double spriteAngle = dataInputStream.readDouble();
-                        if (spellType == 'Q') {
-                            shouldCreateSpellQ = true;
-                        }
-                        if (spellType == 'W') {
-                            shouldCreateSpellW = true;
-                        }
-                        if (spellType == 'E') {
-                            shouldCreateSpellE = true;
-                        }
-                        if (spellType == 'R') {
-                            shouldCreateSpellR = true;
-                        }
-                        if (spellType == 'D') {
-                            shouldDash = true;
-                        }
-                        ServerClientConnectionCopyObjects.currentMousePosition = (Point) dataInputStream.readObject();
-                        connectedClient.get().playerClass.spellCastController(shouldCreateSpellQ, shouldCreateSpellW, shouldCreateSpellE, shouldCreateSpellR, shouldDash, spellID, spriteAngle);
+                if (connectedClient.isPresent()) {
+                    boolean shouldCreateSpellQ = false;
+                    boolean shouldCreateSpellW = false;
+                    boolean shouldCreateSpellE = false;
+                    boolean shouldCreateSpellR = false;
+                    boolean shouldDash = false;
+                    char spellType = dataInputStream.readChar();
+                    int spellID = dataInputStream.readInt();
+                    double spriteAngle = dataInputStream.readDouble();
+                    if (spellType == 'Q') {
+                        shouldCreateSpellQ = true;
                     }
+                    if (spellType == 'W') {
+                        shouldCreateSpellW = true;
+                    }
+                    if (spellType == 'E') {
+                        shouldCreateSpellE = true;
+                    }
+                    if (spellType == 'R') {
+                        shouldCreateSpellR = true;
+                    }
+                    if (spellType == 'D') {
+                        shouldDash = true;
+                    }
+                    ServerClientConnectionCopyObjects.currentMousePosition = (Point) dataInputStream.readObject();
+                    connectedClient.get().playerClass.spellCastController(shouldCreateSpellQ, shouldCreateSpellW, shouldCreateSpellE, shouldCreateSpellR, shouldDash, spellID, spriteAngle);
+                }
 
             }
+//            PLAYER CHANGE HERO PACKET
+            if (packetType == 3) {
+                int clientIDofPlayerChangingHero = dataInputStream.readInt();
+                ServerClientConnectionCopyObjects.PLayer_Champion_Shared = (AllPlayableChampions) dataInputStream.readObject();
+                Optional<ConnectedClient> connectedClient = ConnectedClient.listOfConnectedClients.stream().filter(
+                        client -> client.playerClass.clientID ==
+                                clientIDofPlayerChangingHero).findFirst();
+                connectedClient.ifPresent(client -> client.playerClass.PlayerChampion = ServerClientConnectionCopyObjects.PLayer_Champion_Shared);
 
+//                here we send information to all the players about player changing hero;
+
+                ConnectedClient.listOfConnectedClients.stream().filter(client -> client.playerClass.clientID != clientIDofPlayerChangingHero)
+                        .forEach(client -> {
+                            try {
+                                serverSocket.send(PacketManager.playerChangedChampionInformationPacket(client, connectedClient));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
+            }
+//            PLAYER DISCONNECTED PACKET
+            if (packetType == 4) {
+                int disconnectedClientID = dataInputStream.readInt();
+
+//                here we send information to everyplayer other than disconnectedClient information about disconnect;
+                ConnectedClient.listOfConnectedClients.stream().filter(connectedClient -> connectedClient.playerClass.clientID != disconnectedClientID)
+                                .forEach(connectedClient -> {
+                                    try {
+                                        serverSocket.send(PacketManager.playerDisconnectedInformationPacket(connectedClient, disconnectedClientID));
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
+
+                ConnectedClient.listOfConnectedClients.removeIf(client -> client.playerClass.clientID == disconnectedClientID);
+
+            }
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
+
+
 
 }

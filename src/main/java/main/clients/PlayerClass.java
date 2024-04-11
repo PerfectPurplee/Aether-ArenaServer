@@ -24,10 +24,15 @@ public class PlayerClass implements Serializable {
     //    counter how many players connected to move handler and based on that determine their starting position
     public static int counterOfConnectedClients = 0;
     public final int clientID;
-
-    public final int maxHealth = 4000;
+    public final int maxHealth = 500;
     public int currentHealth;
     public boolean isPlayerStateLocked;
+    public boolean isPlayerDead;
+
+    private final long RESPAWN_COOLDOWN = 5000;
+    private long playerDeathTime;
+    public long RespawnCurrentCooldown;
+
 
     public int counterOfThisPlayerQSpells;
 
@@ -100,10 +105,10 @@ public class PlayerClass implements Serializable {
                 }
             } else {
                 switch (Current_Player_State) {
-                    case MOVING_LEFT, DASHING_LEFT -> {
+                    case MOVING_LEFT, DASHING_LEFT, DEATH_LEFT -> {
                         Current_Player_State = EnumContainer.AllPlayerStates.IDLE_LEFT;
                     }
-                    case MOVING_RIGHT, DASHING_RIGHT -> {
+                    case MOVING_RIGHT, DASHING_RIGHT, DEATH_RIGHT -> {
                         Current_Player_State = EnumContainer.AllPlayerStates.IDLE_RIGHT;
                     }
                 }
@@ -180,6 +185,42 @@ public class PlayerClass implements Serializable {
                 }
 
                 animationTick = 0;
+            }
+        }
+    }
+
+    public void updateReviveCooldownAndRespawnPlayer() {
+        RespawnCurrentCooldown = (RESPAWN_COOLDOWN - (System.currentTimeMillis() - playerDeathTime));
+
+        if (RespawnCurrentCooldown <= 0) {
+            isPlayerDead = false;
+            currentHealth = maxHealth;
+
+        }
+
+
+    }
+
+    public void checkIsPlayerDead() {
+        if (currentHealth <= 0) {
+            isPlayerDead = true;
+            Current_Player_State = setDEATHStateForAnimation();
+            playerDeathTime = System.currentTimeMillis();
+
+        }
+    }
+
+    private EnumContainer.AllPlayerStates setDEATHStateForAnimation() {
+        switch (Current_Player_State) {
+
+            case IDLE_LEFT, MOVING_LEFT, DASHING_LEFT -> {
+                return EnumContainer.AllPlayerStates.DEATH_LEFT;
+            }
+            case IDLE_RIGHT, MOVING_RIGHT, DASHING_RIGHT -> {
+                return EnumContainer.AllPlayerStates.DEATH_RIGHT;
+            }
+            default -> {
+                return EnumContainer.AllPlayerStates.DASHING_RIGHT;
             }
         }
     }

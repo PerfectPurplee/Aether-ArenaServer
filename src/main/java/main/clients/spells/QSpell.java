@@ -16,7 +16,7 @@ public class QSpell {
 
     private Spell01DTO spell01DTO;
 
-    private final int SPEED = 2;
+    private final int SPEED = 4;
     private final int RANGE = 1000;
     private float distanceTraveled = 0;
     //  object starting position on screen. Character pos + (vector * int)
