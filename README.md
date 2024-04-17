@@ -4,9 +4,7 @@ This is a server for https://github.com/PerfectPurplee/Aether-Arena
 ## Setup
 You can run this chain of commands to run a server directly from you terminal:
 ```
-git clone git@github.com:PerfectPurplee/Aether-ArenaServer.git && 
-cd Aether-ArenaServer && mvn clean package && 
-java -jar target/Server.jar
+git clone git@github.com:PerfectPurplee/Aether-ArenaServer.git && cd Aether-ArenaServer && mvn clean package && java -jar target/Server.jar
 
 ```
 Or otherwise if you dont have git/maven/java in your system's path you can use IDE of your choice to compile and run the project.
