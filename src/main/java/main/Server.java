@@ -3,9 +3,7 @@ package main;
 import main.clients.ConnectedClient;
 
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.*;
 import java.util.Optional;
 
@@ -24,7 +22,8 @@ public class Server extends Thread {
         try {
             this.serverSocket = new DatagramSocket(1337);
             this.ipAddress = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
-            System.out.println(ipAddress.getHostAddress());
+            System.out.println("your local IP: " + ipAddress.getHostAddress() + " usable only for LAN");
+            this.retrievePublicIP();
         } catch (SocketException | UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -147,13 +146,13 @@ public class Server extends Thread {
 
 //                here we send information to everyplayer other than disconnectedClient information about disconnect;
                 ConnectedClient.listOfConnectedClients.stream().filter(connectedClient -> connectedClient.playerClass.clientID != disconnectedClientID)
-                                .forEach(connectedClient -> {
-                                    try {
-                                        serverSocket.send(PacketManager.playerDisconnectedInformationPacket(connectedClient, disconnectedClientID));
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                });
+                        .forEach(connectedClient -> {
+                            try {
+                                serverSocket.send(PacketManager.playerDisconnectedInformationPacket(connectedClient, disconnectedClientID));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
 
                 ConnectedClient.listOfConnectedClients.removeIf(client -> client.playerClass.clientID == disconnectedClientID);
 
@@ -163,6 +162,17 @@ public class Server extends Thread {
         }
     }
 
+    private void retrievePublicIP() {
+        try {
+            URL url = new URL("https://api.ipify.org");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            String ipAddress = reader.readLine();
+            System.out.println("your public IP: " + ipAddress + " (provide it to anyone who wants to play with you)");
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }
